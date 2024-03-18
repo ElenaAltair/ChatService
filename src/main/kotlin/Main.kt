@@ -1,3 +1,6 @@
+import org.jetbrains.annotations.NotNull
+import java.util.stream.Collectors
+import kotlin.streams.toList
 
 
 data class Chat( // Чат — это общение с одним человеком, так называемые direct messages.
@@ -41,12 +44,13 @@ object ListChats {
     }
 
     private fun getindexOf(id: Int): Int? { // Возвращает индекс элемента в списке
-        for (chat in chats) {
-            if (chat.id == id) {
-                return chats.indexOf(chat)
-            }
+        val chat = chats.filter { chat: Chat -> chat.id == id }
+        return if (chat.isNotEmpty()) {
+            chats.indexOf(chat[0])
+        } else {
+            null
         }
-        return null
+
     }
 
     fun addMessager(id: Int, messager: Messager): ListMessagers? {
@@ -80,7 +84,34 @@ object ListChats {
 
     // Получить список последних сообщений из чатов (можно в виде списка строк).
     // Если сообщений в чате нет (все были удалены), то пишется «нет сообщений».
-    fun getLastMessagers(): MutableList<String> {
+    fun getLastMessagers():String {
+
+        return chats
+            .joinToString(separator = "; ") {"IdChat: " + it.id.toString() + " " +
+                it.listMessagers.getListMessagers()
+                    .filter { messager: Messager -> messager.text == it.listMessagers.getLastMessager() }
+                    .joinToString { "IdMessager: "+ it.id.toString() +" "+ it.text + " IdUser: "+ it.idUser }
+            }
+
+
+
+        /*
+        chats.forEach {
+            print(
+                "" + if (it.listMessagers.getListMessagers().isNotEmpty()) {
+                    it.listMessagers.getListMessagers()
+                        .filter { messager: Messager -> messager.text == it.listMessagers.getLastMessager() }
+                        .toMutableList().last()
+                } else {
+                    "Сообщений нет"
+                } + "; "
+            )
+        }
+        println()
+         */
+
+
+        /*
         val lastMessagers = mutableListOf<String>()
         val lastMessagersIterator = chats.iterator()
 
@@ -90,6 +121,7 @@ object ListChats {
 
         }
         return lastMessagers
+    */
     }
 
     //Получить список сообщений из чата, указав:
@@ -140,6 +172,7 @@ class ListMessagers {
     }
 
     fun editMessager(id: Int, text: String): Int {
+
         val index = getindexOf(id)
         if (index != null) {
             messagers[index] = messagers[index].copy(text = text, notRead = true)
@@ -161,6 +194,15 @@ class ListMessagers {
         return lastMessager
     }
 
+    fun getLast(): Messager? { //получить последнее сообщение
+
+
+        if (messagers.isNotEmpty()) {
+            return messagers.last()
+        }
+        return null
+    }
+
     fun getUnreadMessagers(): List<Messager> {
         return messagers.filter { it.notRead }
     }
@@ -180,13 +222,24 @@ class ListMessagers {
         return messagers.size
     }
 
-    private fun getindexOf(id: Int): Int? { // Возвращает индекс элемента в списке
-        for (messager in messagers) {
-            if (messager.id == id) {
-                return messagers.indexOf(messager)
-            }
+    fun getindexOf(id: Int): Int? { // Возвращает индекс элемента в списке
+
+        val messager = messagers.filter { messager: Messager -> messager.id == id }
+        return if (messager.isNotEmpty()) {
+            messagers.indexOf(messager[0])
+        } else {
+            null
         }
-        return null
+    }
+
+    // индекс последнего элемента
+    fun getindexOfLast(): Int? { // Возвращает индекс элемента в списке
+
+        return if (messagers.isNotEmpty()) {
+            return messagers.last().id
+        } else {
+            null
+        }
     }
 
     override fun toString(): String {
@@ -205,33 +258,41 @@ fun main() {
     //val messager5 = Messager(5, "Сообщение 5", 1)
     val messager6 = Messager(6, "Сообщение 6", 2)
     val messager7 = Messager(7, "Сообщение 7", 1)
-    println(ListChats.createChat(messager1)) // создаём чат 1
+    println(ListChats.createChat(messager1)) // создаём чат 1 // [Chat(id=1, listMessagers=ListMessagers(messagers=[Messager(id=1, text=Сообщение 1, idUser=1, notRead=true, time=1710441702467)]))]
+
     ListChats.addMessager(1, messager3) // добавляем ещё одно сообщение в чат 1
 
-    println(ListChats.getChatMessagers(1, 1)) //список сообщений пользователя 1 в чате 1
+    //список сообщений пользователя 1 в чате 1 // [Messager(id=1, text=Сообщение 1, idUser=1, notRead=false, time=1710441702467), Messager(id=2, text=Сообщение 3, idUser=1, notRead=false, time=1710441702467)]
+    println(ListChats.getChatMessagers(1, 1))
 
     ListChats.addMessager(1, messager2) // добавляем ещё одно сообщение в чат 1
-    println(ListChats.getChatMessagers(1, 3)) //список сообщений пользователя 3 в чате 1
 
-    println(ListChats.createChat(messager6)) // создаём чат 2
+    //список сообщений пользователя 3 в чате 1 // [Messager(id=3, text=Сообщение 2, idUser=3, notRead=false, time=1710441702467)]
+    println(ListChats.getChatMessagers(1, 3))
+
+    println(ListChats.createChat(messager6)) // создаём чат 2 // [Chat(id=1, listMessagers=ListMessagers(messagers=[Messager(id=1, text=Сообщение 1, idUser=1, notRead=false, time=1710441702467), Messager(id=2, text=Сообщение 3, idUser=1, notRead=false, time=1710441702467), Messager(id=3, text=Сообщение 2, idUser=3, notRead=false, time=1710441702467)])), Chat(id=2, listMessagers=ListMessagers(messagers=[Messager(id=4, text=Сообщение 6, idUser=2, notRead=true, time=1710441702467)]))]
     ListChats.addMessager(2, messager7) // добавляем ещё одно сообщение в чат 2
 
-    println(ListChats.getUnreadChats()) // список чатов с непрочитанными сообщениями
-    println(ListChats.getUnreadChatsCount()) // количество чатов с непрочитанными сообщениями
+    println(ListChats.getUnreadChats()) // список чатов с непрочитанными сообщениями // [Chat(id=2, listMessagers=ListMessagers(messagers=[Messager(id=4, text=Сообщение 6, idUser=2, notRead=true, time=1710441702467), Messager(id=5, text=Сообщение 7, idUser=1, notRead=true, time=1710441702467)]))]
+    println(ListChats.getUnreadChatsCount()) // количество чатов с непрочитанными сообщениями // 1
 
     ListChats.addMessager(1, messager4) // добавляем ещё одно сообщение в чат 1
-    println(ListChats.getUnreadChats()) // список чатов с непрочитанными сообщениями
-    println(ListChats.getUnreadChatsCount()) // количество чатов с непрочитанными сообщениями
+    println(ListChats.getUnreadChats()) // список чатов с непрочитанными сообщениями // [Chat(id=1, listMessagers=ListMessagers(messagers=[Messager(id=1, text=Сообщение 1, idUser=1, notRead=false, time=1710441702467), Messager(id=2, text=Сообщение 3, idUser=1, notRead=false, time=1710441702467), Messager(id=3, text=Сообщение 2, idUser=3, notRead=false, time=1710441702467), Messager(id=6, text=Сообщение 4, idUser=2, notRead=true, time=1710441702467)])), Chat(id=2, listMessagers=ListMessagers(messagers=[Messager(id=4, text=Сообщение 6, idUser=2, notRead=true, time=1710441702467), Messager(id=5, text=Сообщение 7, idUser=1, notRead=true, time=1710441702467)]))]
+    println(ListChats.getUnreadChatsCount()) // количество чатов с непрочитанными сообщениями // 2
 
     ListChats.editMessager(1, 1, "Отредактированное сообщение 1")
-    println(ListChats.getChatMessagers(1, 1)) //список сообщений пользователя 1 в чате 1
 
-    println(ListChats.getLastMessagers()) // список последних сообщений из всех чатов
+    //список сообщений пользователя 1 в чате 1 // [Messager(id=1, text=Отредактированное сообщение 1, idUser=1, notRead=false, time=1710441702467), Messager(id=2, text=Сообщение 3, idUser=1, notRead=false, time=1710441702467)]
+    println(ListChats.getChatMessagers(1, 1))
+
+    println( ListChats.getLastMessagers()) // список последних сообщений из всех чатов // IdChat: 1 IdMessager: 6 Сообщение 4 IdUser: 2; IdChat: 2 IdMessager: 5 Сообщение 7 IdUser: 1
 
     ListChats.deleteMessager(1, 1) // удалим сообщение 1 из чата 1
-    println(ListChats.getChatMessagers(1, 1)) //список сообщений пользователя 1 в чате 1
+
+    //список сообщений пользователя 1 в чате 1 // [Messager(id=2, text=Сообщение 3, idUser=1, notRead=false, time=1710441702467)]
+    println(ListChats.getChatMessagers(1, 1))
 
     ListChats.deleteChat(1)// удалим чат 1
-    println(ListChats.getLastMessagers()) // список последних сообщений из всех чатов
+    println( ListChats.getLastMessagers() )// список последних сообщений из всех чатов // IdChat: 2 IdMessager: 5 Сообщение 7 IdUser: 1
 
 }

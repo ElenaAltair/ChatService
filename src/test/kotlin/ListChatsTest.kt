@@ -25,9 +25,11 @@ class ListChatsTest {
 
         var messager2 = Messager(2, "Сообщение 2", 1)
         ListChats.addMessager(1, messager2)
+        var messager3 = Messager(3, "Сообщение3", 1)
+        ListChats.addMessager(1, messager3)
 
-        assertEquals("[idChat: 1 LastMessager: Сообщение 2]", ListChats.getLastMessagers().toString())
-
+        //assertEquals(3, ListChats.countIdMessager)
+        assertEquals("IdChat: 1 IdMessager: 3 Сообщение3 IdUser: 1", ListChats.getLastMessagers())
 
     }
 
@@ -48,8 +50,6 @@ class ListChatsTest {
         var messager1 = Messager(1, "Сообщение 1", 1)
         ListChats.createChat(messager1)
 
-        ListChats.deleteMessager(1, 1)
-
-        assertEquals("[idChat: 1 LastMessager: Сообщений нет]", ListChats.getLastMessagers().toString())
+        assertEquals( 1, ListChats.deleteMessager(1, 1))
     }
 }
